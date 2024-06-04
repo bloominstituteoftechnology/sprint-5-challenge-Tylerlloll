@@ -4,17 +4,67 @@ async function sprintChallenge5() { // Note the async keyword so you can use `aw
   // 👇 WORK ONLY BELOW THIS LINE 👇
 
   // 👇 ==================== TASK 1 START ==================== 👇
-
   // 🧠 Use Axios to GET learners and mentors.
   // ❗ Use the variables `mentors` and `learners` to store the data.
   // ❗ Use the await keyword when using axios.
 
-  let mentors = [] // fix this
-  let learners = [] // fix this
+    // Task 1: Fetch learners and mentors
+    async function fetchLearners() {
+      try {
+      const learnersResponse = await axios.get('http://localhost:3003/api/learners');
+      return learnersResponse.data;
+    } catch (error) {
+      throw new Error('Error fetching learners:', error);
+    }
+  }
 
+    async function fetchMentors() {
+      try {
+        const mentorsResponse = await axios.get('http://localhost:3003/api/mentors');
+        return mentorsResponse.data;
+      } catch (error) {
+        throw new Error('Error fetching mentors:', error);
+      }
+    }   
+    
+    let learners, mentors;
+    try {
+      learners = await fetchLearners();
+      mentors = await fetchMentors();
+      // console.log('Learners:', learners);
+      // console.log('Mentors:', mentors);
+    } catch (error) {
+      console.log('Error fetching data:', error);
+      return; // Exit the function if fetching fails
+    }
+      
+    
   // 👆 ==================== TASK 1 END ====================== 👆
 
   // 👇 ==================== TASK 2 START ==================== 👇
+    learners = learners.map(learner => {
+      const learnerMentors = learner.mentorIds && Array.isArray(learner.mentorIds)
+      ? mentors
+      .filter(mentor => learner.mentorIds.includes(mentor.id))
+      .map(mentor => mentor.fullName)
+      : [];
+
+      return {
+        id: learner.id,
+        email: learner.email,
+        fullName: learner.fullName,
+        mentors: learnerMentors
+      };
+    });
+     
+    // console.log('Combined Learners:', learners);
+
+    const cardsContainer = document.querySelector('.cards');
+    const info = document.querySelector('.info');
+    info.textContent = 'No learner is selected';
+
+    
+
 
   // 🧠 Combine learners and mentors.
   // ❗ At this point the learner objects only have the mentors' IDs.
@@ -28,12 +78,10 @@ async function sprintChallenge5() { // Note the async keyword so you can use `aw
   //     "Grace Hopper"
   //   ]`
   // }
+  
 
   // 👆 ==================== TASK 2 END ====================== 👆
 
-  const cardsContainer = document.querySelector('.cards')
-  const info = document.querySelector('.info')
-  info.textContent = 'No learner is selected'
 
 
   // 👇 ==================== TASK 3 START ==================== 👇
@@ -52,6 +100,39 @@ async function sprintChallenge5() { // Note the async keyword so you can use `aw
     const email = document.createElement('div')
     const mentorsHeading = document.createElement('h4')
     const mentorsList = document.createElement('ul')
+
+    card.classList.add('card');
+    heading.classList.add('heading');
+    email.classList.add('email');
+    mentorsHeading.classList.add('mentors-heading');
+    mentorsList.classList.add('mentors-list');
+
+    heading.textContent = learner.fullName;
+    email.textContent = learner.email;
+    mentorsHeading.textContent = 'Mentors:';
+
+    learner.mentors.forEach(mentorName => {
+      const mentorItem = document.createElement('li');
+      mentorItem.textContent = mentorName;
+      mentorsList.appendChild(mentorItem);
+    });
+
+    card.appendChild(heading);
+    card.appendChild(email);
+    card.appendChild(mentorsHeading);
+    card.appendChild(mentorsList);
+    card.dataset.fullName = learner.fullName;
+    cardsContainer.appendChild(card);
+
+
+
+
+
+
+    const footer = document.querySelector('footer');
+    const currentYear = new Date().getFullYear();
+    footer.textContent = `© BLOOM INSTITUTE OF TECHNOLOGY ${currentYear}`;
+  
 
     // 👆 ==================== TASK 3 END ====================== 👆
 
