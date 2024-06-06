@@ -28,42 +28,52 @@ async function sprintChallenge5() { // Note the async keyword so you can use `aw
     }   
     
     let learners, mentors;
-    try {
-      learners = await fetchLearners();
-      mentors = await fetchMentors();
-      // console.log('Learners:', learners);
-      // console.log('Mentors:', mentors);
-    } catch (error) {
-      console.log('Error fetching data:', error);
-      return; // Exit the function if fetching fails
-    }
+  try {
+    learners = await fetchLearners();
+    mentors = await fetchMentors();
+    // console.log('Fetched Learners:', learners);
+    // console.log('Fetched Mentors:', mentors);
+  } catch (error) {
+    console.log('Error fetching data:', error);
+    return;
+  }
       
     
   // 👆 ==================== TASK 1 END ====================== 👆
 
   // 👇 ==================== TASK 2 START ==================== 👇
-    learners = learners.map(learner => {
-      const learnerMentors = learner.mentorIds && Array.isArray(learner.mentorIds)
-      ? mentors
-      .filter(mentor => learner.mentorIds.includes(mentor.id))
-      .map(mentor => mentor.fullName)
-      : [];
-
-      return {
-        id: learner.id,
-        email: learner.email,
-        fullName: learner.fullName,
-        mentors: learnerMentors
-      };
+  if (learners && mentors) {
+    learners.forEach(learner => {
+      // console.log('Processing learner:', learner);
+      
+      const mentorNames = [];
+  
+      // Iterate through the mentor IDs of the current learner
+      learner.mentors.forEach(mentorId => {
+        // Find the mentor object with the matching ID in the mentors array
+        const mentor = mentors.find(m => m.id === mentorId);
+        if (mentor) {
+          const mentorName = `${mentor.firstName} ${mentor.lastName}`;
+          mentorNames.push(mentorName);
+          // console.log(`Mapped mentorId ${mentorId} to mentor ${mentorName}`);
+        } else {
+          console.log(`Mentor with id ${mentorId} not found`);
+        }
+      });
+  
+      // Update the mentors property of the current learner with the mentorNames array
+      learner.mentors = mentorNames;
+      // console.log('Updated learner:', learner);
     });
-     
+  
     // console.log('Combined Learners:', learners);
-
+  }
+    // const card = document.querySelector(`[data-full-name="${learners.fullName}"]`);
     const cardsContainer = document.querySelector('.cards');
     const info = document.querySelector('.info');
     info.textContent = 'No learner is selected';
 
-    
+    cardsContainer.innerHTML = ''
 
 
   // 🧠 Combine learners and mentors.
@@ -100,21 +110,27 @@ async function sprintChallenge5() { // Note the async keyword so you can use `aw
     const email = document.createElement('div')
     const mentorsHeading = document.createElement('h4')
     const mentorsList = document.createElement('ul')
+    
+    mentorsList.style.display = 'none';
+    mentorsHeading.classList.add('closed')
 
     card.classList.add('card');
     heading.classList.add('heading');
     email.classList.add('email');
-    mentorsHeading.classList.add('mentors-heading');
     mentorsList.classList.add('mentors-list');
+    
 
     heading.textContent = learner.fullName;
     email.textContent = learner.email;
-    mentorsHeading.textContent = 'Mentors:';
+    mentorsHeading.textContent = 'Mentors';
+
+    // console.log('Mentors for', learner.fullName, ':', learner.mentors);
 
     learner.mentors.forEach(mentorName => {
       const mentorItem = document.createElement('li');
       mentorItem.textContent = mentorName;
       mentorsList.appendChild(mentorItem);
+      // console.log('Appending mentor:', mentorName);
     });
 
     card.appendChild(heading);
@@ -123,8 +139,37 @@ async function sprintChallenge5() { // Note the async keyword so you can use `aw
     card.appendChild(mentorsList);
     card.dataset.fullName = learner.fullName;
     cardsContainer.appendChild(card);
-
-
+    
+    card.addEventListener('click', evt => {
+      const clickedElement = evt.target;
+      const isCardOrChild = clickedElement === card || card.contains(clickedElement);
+    
+      if (isCardOrChild) {
+        const isCardSelected = card.classList.contains('selected');
+        const mentorsList = card.querySelector('.mentors-list');
+        const mentorsHeading = card.querySelector('h4');
+    
+        document.querySelectorAll('.card').forEach(crd => {
+          crd.classList.remove('selected');
+          crd.querySelector('.mentors-list').style.display = 'none';
+          crd.querySelector('h4').classList.replace('open', 'closed');
+        });
+    
+        if (!isCardSelected) {
+          card.classList.add('selected');
+          mentorsList.style.display = 'block';
+          mentorsHeading.classList.replace('closed', 'open');
+          info.textContent = `The selected learner is ${learner.fullName}`;
+        } else {
+          card.classList.remove('selected'); // Remove 'selected' class if clicked again
+          mentorsList.style.display = 'block'; // Keep mentors visible when card is selected
+          mentorsHeading.classList.replace('open', 'closed');
+          info.textContent = 'No learner is selected';
+        }
+      }
+    });
+  
+  
 
 
 
@@ -133,6 +178,8 @@ async function sprintChallenge5() { // Note the async keyword so you can use `aw
     const currentYear = new Date().getFullYear();
     footer.textContent = `© BLOOM INSTITUTE OF TECHNOLOGY ${currentYear}`;
   
+//     if (typeof module !== 'undefined' && module.exports) module.exports = { sprintChallenge5 }
+// else sprintChallenge5();
 
     // 👆 ==================== TASK 3 END ====================== 👆
 
