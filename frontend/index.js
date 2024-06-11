@@ -8,9 +8,9 @@ async function sprintChallenge5() { // Note the async keyword so you can use `aw
   // ❗ Use the variables `mentors` and `learners` to store the data.
   // ❗ Use the await keyword when using axios.
 
-    // Task 1: Fetch learners and mentors
-    async function fetchLearners() {
-      try {
+  // Task 1: Fetch learners and mentors
+  async function fetchLearners() {
+    try {
       const learnersResponse = await axios.get('http://localhost:3003/api/learners');
       return learnersResponse.data;
     } catch (error) {
@@ -18,16 +18,16 @@ async function sprintChallenge5() { // Note the async keyword so you can use `aw
     }
   }
 
-    async function fetchMentors() {
-      try {
-        const mentorsResponse = await axios.get('http://localhost:3003/api/mentors');
-        return mentorsResponse.data;
-      } catch (error) {
-        throw new Error('Error fetching mentors:', error);
-      }
-    }   
-    
-    let learners, mentors;
+  async function fetchMentors() {
+    try {
+      const mentorsResponse = await axios.get('http://localhost:3003/api/mentors');
+      return mentorsResponse.data;
+    } catch (error) {
+      throw new Error('Error fetching mentors:', error);
+    }
+  }
+
+  let learners, mentors;
   try {
     learners = await fetchLearners();
     mentors = await fetchMentors();
@@ -37,17 +37,14 @@ async function sprintChallenge5() { // Note the async keyword so you can use `aw
     console.log('Error fetching data:', error);
     return;
   }
-      
-    
+
   // 👆 ==================== TASK 1 END ====================== 👆
 
   // 👇 ==================== TASK 2 START ==================== 👇
   if (learners && mentors) {
     learners.forEach(learner => {
-      // console.log('Processing learner:', learner);
-      
       const mentorNames = [];
-  
+
       // Iterate through the mentor IDs of the current learner
       learner.mentors.forEach(mentorId => {
         // Find the mentor object with the matching ID in the mentors array
@@ -55,82 +52,79 @@ async function sprintChallenge5() { // Note the async keyword so you can use `aw
         if (mentor) {
           const mentorName = `${mentor.firstName} ${mentor.lastName}`;
           mentorNames.push(mentorName);
-          // console.log(`Mapped mentorId ${mentorId} to mentor ${mentorName}`);
         } else {
           console.log(`Mentor with id ${mentorId} not found`);
         }
       });
-  
+
       // Update the mentors property of the current learner with the mentorNames array
       learner.mentors = mentorNames;
-      // console.log('Updated learner:', learner);
     });
-  
-    // console.log('Combined Learners:', learners);
   }
-    // const card = document.querySelector(`[data-full-name="${learners.fullName}"]`);
-    const cardsContainer = document.querySelector('.cards');
-    const info = document.querySelector('.info');
-    info.textContent = 'No learner is selected';
 
-    cardsContainer.innerHTML = ''
+  const cardsContainer = document.querySelector('.cards');
+  const info = document.querySelector('.info');
+  info.textContent = 'No learner is selected';
 
-
-  // 🧠 Combine learners and mentors.
-  // ❗ At this point the learner objects only have the mentors' IDs.
-  // ❗ Fix the `learners` array so that each learner ends up with this exact structure:
-  // {
-  //   id: 6,
-  //   fullName: "Bob Johnson",
-  //   email: "bob.johnson@example.com",
-  //   mentors: [
-  //     "Bill Gates",
-  //     "Grace Hopper"
-  //   ]`
-  // }
-  
+  cardsContainer.innerHTML = '';
 
   // 👆 ==================== TASK 2 END ====================== 👆
 
-
-
   // 👇 ==================== TASK 3 START ==================== 👇
 
-  for (let learner of learners) { // looping over each learner object
+  function toggleCardSelection(event, learner) {
+    const card = event.currentTarget; // Use currentTarget to get the element that triggered the event
+    const isCardSelected = card.classList.contains('selected');
 
-    // 🧠 Flesh out the elements that describe each learner
-    // ❗ Give the elements below their (initial) classes, textContent and proper nesting.
-    // ❗ Do not change the variable names, as the code that follows depends on those names.
-    // ❗ Also, loop over the mentors inside the learner object, creating an <li> element for each mentor.
-    // ❗ Fill each <li> with a mentor name, and append it to the <ul> mentorList.
-    // ❗ Inspect the mock site closely to understand what the initial texts and classes look like!
+    // Deselect all other cards
+    document.querySelectorAll('.card.selected').forEach(otherCard => {
+      if (otherCard!== card) {
+        otherCard.classList.remove('selected');
+        otherCard.querySelector('h3').textContent = otherCard.dataset.fullName;
+        otherCard.querySelector('.mentors-list').style.display = 'none';
+        otherCard.querySelector('h4').classList.remove('open');
+        otherCard.querySelector('h4').classList.add('closed');
+      }
+    });
 
-    const card = document.createElement('div')
-    const heading = document.createElement('h3')
-    const email = document.createElement('div')
-    const mentorsHeading = document.createElement('h4')
-    const mentorsList = document.createElement('ul')
-    
+    if (!isCardSelected) {
+      card.classList.remove('selected');
+      card.querySelector('.mentors-list').style.display = 'none';
+      card.querySelector('h4').classList.remove('open');
+      card.querySelector('h4').classList.add('closed');
+      document.querySelector('.info').textContent = 'No learner is selected';
+    } else {
+      card.classList.add('selected');
+      card.querySelector('.mentors-list').style.display = 'block';
+      card.querySelector('h4').classList.remove('closed');
+      card.querySelector('h4').classList.add('open');
+      document.querySelector('.info').textContent = `The selected learner is ${learner.fullName}`;
+    }
+  }
+
+  for (let learner of learners) {
+    const card = document.createElement('div');
+    const heading = document.createElement('h3');
+    const email = document.createElement('div');
+    const mentorsHeading = document.createElement('h4');
+    const mentorsList = document.createElement('ul');
+
     mentorsList.style.display = 'none';
-    mentorsHeading.classList.add('closed')
+    mentorsHeading.classList.add('closed');
 
     card.classList.add('card');
     heading.classList.add('heading');
     email.classList.add('email');
     mentorsList.classList.add('mentors-list');
-    
 
     heading.textContent = learner.fullName;
     email.textContent = learner.email;
     mentorsHeading.textContent = 'Mentors';
 
-    // console.log('Mentors for', learner.fullName, ':', learner.mentors);
-
     learner.mentors.forEach(mentorName => {
       const mentorItem = document.createElement('li');
       mentorItem.textContent = mentorName;
       mentorsList.appendChild(mentorItem);
-      // console.log('Appending mentor:', mentorName);
     });
 
     card.appendChild(heading);
@@ -139,44 +133,19 @@ async function sprintChallenge5() { // Note the async keyword so you can use `aw
     card.appendChild(mentorsList);
     card.dataset.fullName = learner.fullName;
     cardsContainer.appendChild(card);
-    
-    card.addEventListener('click', evt => {
-      const clickedElement = evt.target;
-      const isCardOrChild = clickedElement === card || card.contains(clickedElement);
-    
-      if (isCardOrChild) {
-        const isCardSelected = card.classList.contains('selected');
-        const mentorsList = card.querySelector('.mentors-list');
-        const mentorsHeading = card.querySelector('h4');
-    
-        document.querySelectorAll('.card').forEach(crd => {
-          crd.classList.remove('selected');
-          crd.querySelector('.mentors-list').style.display = 'none';
-          crd.querySelector('h4').classList.replace('open', 'closed');
-        });
-    
-        if (!isCardSelected) {
-          card.classList.add('selected');
-          mentorsList.style.display = 'block';
-          mentorsHeading.classList.replace('closed', 'open');
-          info.textContent = `The selected learner is ${learner.fullName}`;
-        } else {
-          card.classList.remove('selected'); // Remove 'selected' class if clicked again
-          mentorsList.style.display = 'block'; // Keep mentors visible when card is selected
-          mentorsHeading.classList.replace('open', 'closed');
-          info.textContent = 'No learner is selected';
-        }
-      }
+
+    card.addEventListener('click', (event) => {
+      toggleCardSelection(event, learner);
     });
   
   
+  
+  
 
+  const footer = document.querySelector('footer');
+  const currentYear = new Date().getFullYear();
+  footer.textContent = `© BLOOM INSTITUTE OF TECHNOLOGY ${currentYear}`;
 
-
-
-    const footer = document.querySelector('footer');
-    const currentYear = new Date().getFullYear();
-    footer.textContent = `© BLOOM INSTITUTE OF TECHNOLOGY ${currentYear}`;
   
 //     if (typeof module !== 'undefined' && module.exports) module.exports = { sprintChallenge5 }
 // else sprintChallenge5();
